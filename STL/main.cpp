@@ -3,9 +3,9 @@
 #include <bitset>
 
 int main() {
-	String s = "ABC";
-	s.ToLower();
-	std::cout << s;
+	//String s = "ABC";
+	String c = 'c';
+	c.Concat('s');
 
 	//String p("One");
 	//String d = p;
