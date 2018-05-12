@@ -1,2 +1,2 @@
 # String
-C++ implementation of string
+C++ implementation of the STL classes like Vector, String etc.
