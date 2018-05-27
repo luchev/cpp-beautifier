@@ -527,9 +527,9 @@ void CodeFormatter::Beautify() {
 	size_t bracketkeyword = 0;
 	size_t operatorr = 0;
 	String tab = "\t";
-	Stack<size_t> ifIndents;
-	bool bracketKeywordBrackets = false;
-	int noBracketBlock = 0;
+	Stack<size_t> ifIndents; // The indent of the last if is stored here
+	bool bracketKeywordBrackets = false; // If the brackets () were after a for or if
+	int noBracketBlock = 0; // How many if or for have openeded without brackets
 
 	// Actual formatting
 	for (size_t i = 0; i < codeFormatted.Size(); ++i) {
@@ -544,7 +544,9 @@ void CodeFormatter::Beautify() {
 		if (ii == '/' && !openQuotes && !openChar) {
 			if (codeFormatted[i + 1] == '/' && !openOneLineComment) {
 				openOneLineComment = true; // Open one line comment
-				//newCode.TrimEnd().Append(' ');
+				if (!IsEmptySpace(lastChar)) {
+					newCode.Append(' ');
+				}
 			}
 			else if (codeFormatted[i + 1] == '*' && !openComment) {
 				openComment = true; // Open multiline comment
@@ -599,15 +601,22 @@ void CodeFormatter::Beautify() {
 				// TODO
 			}
 			else if (operatorr < (size_t)-1) { // includes ;
-				// TODO
-				if (operators[operatorr] == ";") {
+				// TODO handle more operators
+				if (operators[operatorr] == ";") { // Handle ;
 					newCode.TrimEnd();
 					if (bracketRound < 1) { // if not inside ( )
 						if (noBracketBlock > 0) {
 							--noBracketBlock;
 							--indent;
 						}
-						newCode.Append(";\n").Append(tab * indent);
+
+						for (; codeFormatted[i + 1] == '\t' || codeFormatted[i + 1] == ' '; ++i); // Ignore all white space until new line or // for a comment
+						if (codeFormatted[i + 1] == '/') { // A comment is following
+							newCode.Append(';');
+						}
+						else { // No comment following
+							newCode.Append(";\n").Append(tab * indent);
+						}
 					}
 					else { // if inside ( )
 						newCode.Append("; ");
