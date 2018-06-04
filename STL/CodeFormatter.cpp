@@ -37,19 +37,19 @@ Vector<String> CodeFormatter::Extensions() const {
 	return extensions;
 }
 
-void CodeFormatter::Code(String Cod) {
+void CodeFormatter::Code(const String& Cod) {
 	codeFormatted = Cod;
 }
 
-void CodeFormatter::Config(String Conf) {
+void CodeFormatter::Config(const String& Conf) {
 	config = Conf;
 }
 
-void CodeFormatter::CodeFile(String Name) {
+void CodeFormatter::CodeFile(const String& Name) {
 	codeFile = Name;
 }
 
-void CodeFormatter::ConfigFile(String Name) {
+void CodeFormatter::ConfigFile(const String& Name) {
 	configFile = Name;
 }
 
@@ -1028,7 +1028,7 @@ void CodeFormatter::Html() {
 	html.Append("</body>\n</html>\n");
 }
 
-size_t CodeFormatter::isInVector(const char * Str, Vector<String>& Vect, bool VarCharAfter) {
+size_t CodeFormatter::isInVector(const char * Str, Vector<String> Vect, bool VarCharAfter) const {
 	for (size_t i = 0; i < Vect.Size(); ++i) {
 		if (VarCharAfter) {
 			if (StrEqualsWithVarCharAfter(Vect[i].Get(), Str, Vect[i].Size()))
@@ -1042,7 +1042,7 @@ size_t CodeFormatter::isInVector(const char * Str, Vector<String>& Vect, bool Va
 	return -1;
 }
 
-size_t CodeFormatter::longestMatch(const char * Str, Vector<String>& Vect, bool VarCharAfter) {
+size_t CodeFormatter::longestMatch(const char * Str, Vector<String> Vect, bool VarCharAfter) const  {
 	size_t longest = -1;
 	for (size_t i = 0; i < Vect.Size(); ++i) {
 		if (VarCharAfter) {
@@ -1069,7 +1069,7 @@ size_t CodeFormatter::longestMatch(const char * Str, Vector<String>& Vect, bool 
 	return longest;
 }
 
-size_t CodeFormatter::isNumber(const char * Str) {
+size_t CodeFormatter::isNumber(const char * Str) const {
 	size_t dot = -1;
 	size_t e = -1;
 	size_t i = 0;
@@ -1096,7 +1096,7 @@ size_t CodeFormatter::isNumber(const char * Str) {
 	return -1;
 }
 
-bool CodeFormatter::StrEqualsWithVarCharAfter(const char* What, const char* Where, size_t Limit) { // Returns true if the words are matched and there's not a letter or a number after the end in Where
+bool CodeFormatter::StrEqualsWithVarCharAfter(const char* What, const char* Where, size_t Limit) const  { // Returns true if the words are matched and there's not a letter or a number after the end in Where
 	size_t i = 0;
 	for (; i < Limit; ++i)
 		if (Where[i] != What[i])
@@ -1108,7 +1108,7 @@ bool CodeFormatter::StrEqualsWithVarCharAfter(const char* What, const char* Wher
 	return !VarChar(Where[i]); // || Where[i] == '(';
 }
 
-bool CodeFormatter::StrBeginsWith(const char * What, const char * Where, size_t Limit) { // Returns true if the words match
+bool CodeFormatter::StrBeginsWith(const char * What, const char * Where, size_t Limit) const  { // Returns true if the words match
 	size_t i = 0;
 	for (; i < Limit; ++i)
 		if (Where[i] != What[i])
@@ -1121,6 +1121,6 @@ bool CodeFormatter::StrBeginsWith(const char * What, const char * Where, size_t 
 	//return !!VarChar(Where[i]); // || Where[i] == '(';
 }
 
-bool CodeFormatter::VarChar(char Ch) {
+bool CodeFormatter::VarChar(char Ch) const  {
 	return  ((Ch >= 'a' && Ch <= 'z') || (Ch >= 'A' && Ch <= 'Z') || (Ch >= '0' && Ch <= '9') || Ch == '_');
 }

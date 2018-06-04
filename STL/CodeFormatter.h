@@ -5,12 +5,12 @@
 
 class CodeFormatter {
 private: // Helper functions and members
-	size_t isInVector(const char * Str, Vector<String>& Vect, bool VarCharAfter = true); // Returns whether Str matches one of the words in the vector compaing with the VarCharAfter functions
-	size_t longestMatch(const char * Str, Vector<String>& Vect, bool VarCharAfter = true); // Returns the longest match from the vector
-	size_t isNumber(const char * Str); // Returns the index of where the number ends, -1 if no number is found from the start
-	bool StrEqualsWithVarCharAfter(const char* What, const char* Where, size_t Limit); // Compares the stringgs and checks the last char in Where for being a variable char
-	bool StrBeginsWith(const char* What, const char* Where, size_t Limit); // Returns true if Where begins with What
-	bool VarChar(char Ch); // Checks if the character is not a letter or number or underscore
+	size_t isInVector(const char * Str, Vector<String> Vect, bool VarCharAfter = true) const; // Returns whether Str matches one of the words in the vector compaing with the VarCharAfter functions
+	size_t longestMatch(const char * Str, Vector<String> Vect, bool VarCharAfter = true) const; // Returns the longest match from the vector
+	size_t isNumber(const char * Str) const; // Returns the index of where the number ends, -1 if no number is found from the start
+	bool StrEqualsWithVarCharAfter(const char* What, const char* Where, size_t Limit) const; // Compares the stringgs and checks the last char in Where for being a variable char
+	bool StrBeginsWith(const char* What, const char* Where, size_t Limit) const; // Returns true if Where begins with What
+	bool VarChar(char Ch) const; // Checks if the character is not a letter or number or underscore
 
 	// Heavy functions doing random stuff
 	void RemoveEmptyLines(bool OnlyWithSpaces = false); // Removes all empty lines, to be used after removing comments to clean up the code
@@ -46,10 +46,10 @@ public:
 	String Code() const;
 	String Config() const;
 	Vector<String> Extensions() const;
-	void Code(String Cod);
-	void Config(String Conf);
-	void CodeFile(String Name);
-	void ConfigFile(String Name);
+	void Code(const String& Cod);
+	void Config(const String& Conf);
+	void CodeFile(const String& Name);
+	void ConfigFile(const String& Name);
 	void LoadCode();
 	void LoadConfig();
 	void Save();

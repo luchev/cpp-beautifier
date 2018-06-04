@@ -2,3 +2,4 @@
 Debug/
 *.sln
 STL.*
+STL/test/

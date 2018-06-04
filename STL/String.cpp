@@ -158,7 +158,7 @@ String& String::Append(const String& Str) {
 	}
 	return *this;
 }
-String & String::Prepend(String Str)
+String & String::Prepend(const String& Str)
 {
 	return InsertAt(0, Str);
 }
@@ -453,7 +453,7 @@ String& String::ReplaceAllSafe(const String & What, const String & With, Vector<
 	str = newStr;
 	return *this;
 }
-String& String::ReplaceAllOutsidePairs(const String & What, const String With, Vector<Pair<size_t, size_t>>& Pairs) {
+String& String::ReplaceAllOutsidePairs(const String & What, const String& With, Vector<Pair<size_t, size_t>> Pairs) {
 	if (Pairs.Size() == 0)
 		return *this;
 	Vector<size_t> indexes = IndexAll(What);
@@ -474,7 +474,7 @@ String& String::ReplaceAllOutsidePairs(const String & What, const String With, V
 	}
 	return ReplaceAllSafe(What, With, indexes);
 }
-String & String::ReplaceAllInsidePairs(const String & What, const String With, Vector<Pair<size_t, size_t>>& Pairs) {
+String & String::ReplaceAllInsidePairs(const String & What, const String& With, Vector<Pair<size_t, size_t>> Pairs) {
 	if (Pairs.Size() == 0)
 		return *this;
 	Vector<size_t> indexes = IndexAll(What);

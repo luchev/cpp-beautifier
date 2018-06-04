@@ -22,8 +22,8 @@ private:
 	void grow();
 	void shrink();
 	void copyList(T* Dest, T* Source, size_t Size);
-	size_t calcGrow(size_t Size);
-	size_t calcShrink(size_t Size);
+	size_t calcGrow(size_t Size) const;
+	size_t calcShrink(size_t Size) const;
 	T backup;
 public:
 	// Constructors
@@ -45,8 +45,8 @@ public:
 	Vector<T>& RemoveAt(size_t Index);
 	Vector<T>& RemoveAll(T& Item);
 	T& operator[](size_t Index);
-	Vector<T> Concatinate(Vector<T>& AnotherVector);
-	Vector<T> operator+(Vector<T>& AnotherVector);
+	Vector<T> Concatinate(const Vector<T>& AnotherVector) const;
+	Vector<T> operator+(const Vector<T>& AnotherVector) const;
 	// RemoveAll, Remove
 	// Sort
 	// Reverse
@@ -78,13 +78,13 @@ void Vector<T>::copyList(T* Dest, T* Source, size_t Size) {
 		Dest[i] = Source[i];
 }
 template <typename T>
-size_t Vector<T>::calcGrow(size_t Size) {
+size_t Vector<T>::calcGrow(size_t Size) const {
 	size_t i = 1;
 	for (; i <= Size; i *= 2);
 	return i;
 }
 template <typename T>
-size_t Vector<T>::calcShrink(size_t Size) {
+size_t Vector<T>::calcShrink(size_t Size) const {
 	size_t i = 1;
 	for (; i < Size; i *= 2);
 	return i;
@@ -117,14 +117,14 @@ T& Vector<T>::operator[](size_t Index) {
 	return backup;
 }
 template<typename T>
-Vector<T> Vector<T>::Concatinate(Vector<T>& AnotherVector) {
+Vector<T> Vector<T>::Concatinate(const Vector<T>& AnotherVector) const {
 	Vector<T> newVect;
 	newVect.Append(*this);
 	newVect.Append(AnotherVector);
 	return newVect;
 }
 template<typename T>
-Vector<T> Vector<T>::operator+(Vector<T>& AnotherVector) {
+Vector<T> Vector<T>::operator+(const Vector<T>& AnotherVector) const {
 	return Concatinate(AnotherVector);
 }
 template<typename T>

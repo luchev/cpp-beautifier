@@ -34,8 +34,8 @@ public:
 	// Append
 	String& Append(char Char); // Append to the end of the string
 	String& Append(const char* Str);
-	String& Append(const String &Str);
-	String& Prepend(String Str); // Append to the start of the string
+	String& Append(const String& Str);
+	String& Prepend(const String& Str); // Append to the start of the string
 	String& operator+=(const String& Str); // Calls Append
 	String& InsertAt(size_t Pos, const String& Str); // Inserts the string at the given position
 	friend String operator*(String Str, size_t Number); // Makes N copies of the string
@@ -75,15 +75,15 @@ public:
 	String& RemoveAt(size_t Index); // Remove the character at the Index position from the string
 	String& RemoveRange(size_t From, size_t To); // Remove a substring
 	String& Replace(const String& What, const String& With, size_t AfterIndex = 0, size_t BeforeIndex = -1); // Replace What with With ONCE
-	String& ReplaceAt(const String& What, const String& With, size_t IndexAt);
+	String& ReplaceAt(const String& What, const String& With, size_t IndexAt); // Replaces What with With at the given Index, used to bypass the Replace which replaces the first instance of What
 	String& ReplaceAll(const String& What, const String& With, size_t AfterIndex = 0, size_t BeforeIndex = -1); // Replace What with With until there's no more What in the string. WARNING: Be careful what you replace, could enter infinite loop
 	String& ReplaceAllSafe(const String& What, const String& With); // Replace What with With safely, by replacing each found index only once
-	String& ReplaceAllSafe(const String& What, const String& With, Vector<size_t>& Indexes);
-	String& ReplaceAllOutsidePairs(const String& What, const String With, Vector<Pair<size_t, size_t>>& Pairs); // Replaces all where the index of What is not withing a Pair
-	String& ReplaceAllInsidePairs(const String& What, const String With, Vector<Pair<size_t, size_t>>& Pairs); // Replaces all where the index of What is withing a Pair
+	String& ReplaceAllSafe(const String& What, const String& With, Vector<size_t>& Indexes); // Replace What with With safely by replacing each found index only once
+	String& ReplaceAllOutsidePairs(const String& What, const String& With, Vector<Pair<size_t, size_t>> Pairs); // Replaces all where the index of What is not withing a Pair
+	String& ReplaceAllInsidePairs(const String& What, const String& With, Vector<Pair<size_t, size_t>> Pairs); // Replaces all where the index of What is withing a Pair
 	String& ReplaceFromUntil(size_t From, const String& Until, const String& With); // Replace everything from From to the end of Str
 	String& ReplaceFromTo(const String& From, const String& To, const String& With); // Replace everything from From to the end of To with With
-	String& ReplaceFromTo(Pair<size_t, size_t> Indexes, const String& With); // Replaces everything within the inddexe with With
+	String& ReplaceFromTo(const Pair<size_t, size_t> Indexes, const String& With); // Replaces everything within the inddexe with With
 	String& Remove(const String& What); // Removes substring from the string
 	String& RemoveAll(const String& What); // Removes all substrings from the string
 	String& Reverse(); // Reverse the string
@@ -97,7 +97,7 @@ public:
 	size_t IndexNotPrecededBy(const String& Str, size_t AfterIndex = 0, char NotPrecededBy = ' ') const; // Returns the first position where Str is encountered and is not preceeded by NotPrecededBy
 	size_t IndexNotFollowedBy(const String& Str, size_t AfterIndex = 0, char NotFollowedBy = ' ') const; // Returns the first position where Str is encountered
 	size_t LastIndex(const String& Str, size_t BeforeIndex = -1) const; // Returns the last position where Str is encountered
-	size_t LastIndexNonEmpty(size_t BeforeIndex = -1) const;
+	size_t LastIndexNonEmpty(size_t BeforeIndex = -1) const; // Return the last index which is not \t \n or a space
 	Vector<size_t> IndexAll(const String& Str, size_t AfterIndex = 0, size_t BeforeIndex = -1) const; // Returns all the indexes of an occurence of Str in the string, not overlapping
 	Vector<size_t> IndexOverlapping(const String& Str, size_t AfterIndex = 0, size_t BeforeIndex = -1) const; // Returns all the indexes of Str occurring in the string overlapping
 	Pair<size_t, size_t> IndexPair(const String& From, const String& To, size_t AfterIndex = 0, size_t BeforeIndex = -1) const; // Returns a pair of the starting index where From was found and the ending index of To where To was found after From in the string
@@ -117,4 +117,3 @@ bool StrEquals(const char* Str1, const char* Str2, size_t Limit); // Determines 
 void RReverse(char* Str, size_t Len); // Recursively reverses a string
 bool IsEmptySpace(char Ch); // Returns if it's a \n \t or space
 #endif
-
