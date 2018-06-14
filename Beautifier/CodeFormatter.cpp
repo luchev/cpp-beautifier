@@ -5,6 +5,7 @@
 #include "String.h"
 #include "Vector.hpp"
 #include "Stack.hpp"
+#include "Trio.hpp"
 
 CodeFormatter::CodeFormatter(String CodeFile, String ConfigFile) : codeFile(CodeFile), configFile(ConfigFile) {
 	if (CodeFile.Size() != 0 && ConfigFile.Size() != 0) {
@@ -530,9 +531,7 @@ void CodeFormatter::Beautify() {
 	size_t bracketkeyword = 0; // index of the bracket keyword found, -1 if not found
 	size_t operatorr = 0; // index of the operator found, -1 if not found
 	String tab = "\t"; // The indent character(s) to use as indent
-	Stack<Pair<String, size_t>> blocks; // Keeps the block that we are in (for, if, etc.) and its indent level
-	Stack<size_t> brackets; // Keeps the indent level of the { we are in
-	bool bracketKeywordBrackets = false; // If the brackets () were after a for or if
+	Stack<Trio<String, size_t, bool>> blocks; // Keeps the block that we are in (for, if, etc.) and its indent level
 
 	// Actual formatting
 	for (size_t i = 0; i < codeFormatted.Size(); ++i) {
@@ -589,20 +588,29 @@ void CodeFormatter::Beautify() {
 				openOneLineComment = false; // Close one line comment
 			}
 		}
-
+		std::cout << ii;
 		//
 		// The logic for adding characters to the new code string, indenting, etc. goes here
 		//
+		//for (; IsEmptySpace(codeFormatted[i + 1]); ++i); // Ignore all white space
 		if (!preprocessorLine && !openComment && !openOneLineComment && !openQuotes && !openChar) {
 			indentkeyword = longestMatch(codeFormatted.Get() + i, keywords_with_indent);
 			bracketkeyword = longestMatch(codeFormatted.Get() + i, keywords_with_brackets);
 			operatorr = longestMatch(codeFormatted.Get() + i, operators, false);
-			//for (; IsEmptySpace(codeFormatted[i + 1]); ++i); // Ignore all white space
 			if (bracketkeyword < (size_t)-1) { // Open () after if or for, etc. to know after these brackets to add new line and indent
-				bracketKeywordBrackets = true;
+				addChar = false;
+				newCode.Append(keywords_with_brackets[bracketkeyword]);
+				i += keywords_with_brackets[bracketkeyword].Size();
+				for (; IsEmptySpace(codeFormatted[i + 1]); ++i); // Ignore all white space
+				Trio<String, size_t, bool> block(keywords_with_brackets[bracketkeyword], indent, false);
+				blocks.Push(block);
 			}
 			else if (indentkeyword < (size_t)-1) {
-				// TODO
+				newCode.Append(keywords_with_indent[bracketkeyword]);
+				i += keywords_with_indent[bracketkeyword].Size();
+				for (; IsEmptySpace(codeFormatted[i + 1]); ++i); // Ignore all white space
+				Trio<String, size_t, bool> block(keywords_with_indent[indentkeyword], indent, false);
+				blocks.Push(block);
 			}
 			else if (operatorr < (size_t)-1) { // includes ;
 				// TODO handle more operators
@@ -629,49 +637,55 @@ void CodeFormatter::Beautify() {
 				//}
 			}
 			else if (ii == '(') {
-				//++bracketRound;
-				//addChar = false;
-				//newCode.TrimEnd();
-				//newCode.Append(" (");
+				++bracketRound;
+				newCode.TrimEnd();
+				if (isInVector(String(newCode[newCode.Size() - 1]).Get(), operators, false) || (bracketRound == 1)) { // If the last char is an operator or a keyword with brackets
+					newCode.Append(' ');
+				}
+				for (; IsEmptySpace(codeFormatted[i + 1]); ++i); // Ignore all white space
 			}
 			else if (ii == ')') {
-				// TODO
-				//--bracketRound;
-				//addChar = false;
-				//newCode.TrimEnd();
-				//for (; IsEmptySpace(codeFormatted[i + 1]); ++i);
-				//if (bracketRound < 1) {
-				//	newCode.Append(')');
-				//	if (bracketKeywordBrackets) {
-				//		bracketKeywordBrackets = false;
-				//		if (codeFormatted[i + 1] != '{') { // If we're at the end of an if () or for() or something like that
-				//			++indent;
-				//			newCode.Append("\n" + tab * indent);
-				//			//++noBracketBlock;
-				//		}
-				//	}
-				//	else {
-				//		newCode.Append(' ');
-				//	}
-				//}
-				//else {
-				//	newCode.Append(")");
-				//}
+				--bracketRound;
+				addChar = false;
+				newCode.TrimEnd();
+				for (; IsEmptySpace(codeFormatted[i + 1]); ++i);
+				newCode.Append(')');
+				if (bracketRound < 1) {
+					if (codeFormatted[i + 1] == '{' && !blocks.IsEmpty()) {
+						Trio<String, size_t, bool> newBlock(blocks.Pop());
+						newBlock.C(true);
+						blocks.Push(newBlock);
+						std::cout << "---" << indent;
+					}
+				}
+				else {
+					newCode.Append(' ');
+				}
 			}
 			else if (ii == '{') {
-				//++bracketCurly;
-				//++indent;
-				//addChar = false;
-				//newCode.TrimEnd();
-				//newCode.Append(" {\n");
-				//newCode.Append(tab * indent);
+				if (blocks.IsEmpty()) {
+					++indent;
+				}
+				++bracketCurly;
+				addChar = false;
+				newCode.TrimEnd();
+				newCode.Append(" {\n");
+				newCode.Append(tab * indent);
 			}
 			else if (ii == '}') {
-				//--bracketCurly;
-				//--indent;
-				//addChar = false;
-				//newCode.TrimEnd();
-				//newCode.Append("\n").Append(tab * indent).Append("}\n");
+				--bracketCurly;
+				addChar = false;
+				if (!blocks.IsEmpty() && blocks.Peek().C() == true) {
+					blocks.Pop();
+				}
+				else {
+					std::cout << "^^^";
+				}
+				newCode.TrimEnd();
+				newCode.Append("\n");
+				newCode.Append(tab * indent);
+				newCode.Append("}\n");
+				--indent;
 			}
 			else if (IsEmptySpace(ii)) {
 				if (IsEmptySpace(lastChar)) {
@@ -682,7 +696,6 @@ void CodeFormatter::Beautify() {
 		else if (preprocessorLine && !openComment && !openOneLineComment && !openQuotes && !openChar) {
 			// Handle preprocessor lines
 		}
-
 		// Add the char to the new code string if needed
 		if (addChar) {
 			//if (lastChar == '\n') { // if we just moved to a new line
