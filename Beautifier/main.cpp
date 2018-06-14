@@ -10,7 +10,14 @@
 #include <iostream>
 #include <iomanip>
 
-int main(int argc, char **argv) {
+int main(int argc, char *argv[]) {
+	// Create the backup cpp.ini file if one isn't present so the program can use it below
+	String cppini = "language_name = C++\r\n\r\nfile_extensions = c, C, cpp, c++, cc, cxx, cp, h, H, hpp, h++, hh, hxx. hp\r\n\r\nkeywords = alignas,alignof,and,and_eq,asm,atomic_cancel,atomic_commit,atomic_noexcept,auto,bitand,bitor,bool,break,case,catch,char,char16_t,char32_t,class,compl,concept,const,constexpr,const_cast,continue,co_await,co_return,co_yield,decltype,default,delete,do,double,dynamic_cast,else,enum,explicit,export,extern,false,float,for,friend,goto,if,import,inline,int,long,module,mutable,namespace,new,noexcept,not,not_eq,nullptr,operator,or,or_eq,private,protected,public,register,reinterpret_cast,requires,return,short,signed,sizeof,static,static_assert,static_cast,struct,switch,synchronized,template,this,thread_local,throw,true,try,typedef,typeid,typename,union,unsigned,using,virtual,void,volatile,wchar_t,while,xor,xor_eq,override,final,transaction_safe,transaction_safe_dynamic,\r\n\r\nkeywords_with_indent = if,for,while,switch, catch, else if, else, try\r\n\r\nkeywords_with_brackets = if, for, while, switch, else if, catch\r\n\r\noperators = +,-,*,/,%,^,|,||,&,&&,~,<<,>>,<,>,=,==,!=,>=,<=,!,+=,-=,,*=,/=,%=,&=,|=,^=,<<=,>>=,++,--,.,::,?,:,;\r\n\r\nbrackets = (,),{,},[,]\r\n\r\nraw_css = \"@font-face { font-family: Fira Code; src: url('https://github.com/tonsky/FiraCode/blob/master/distr/otf/FiraCode-Regular.otf?raw=true'); }\"\r\n\r\nbody_formattting = \"background-color: #1e1e1e; color: c8c8c8; font-family: Fira Code;\"\r\n\r\ncomment_formatting = \"color: #57a64a; font-style: italic;\"\r\n\r\nkeyword_formatting = \"color: #3073d6; font-weight: bold;\"\r\n\r\nstring_formatting = \"color: #d69d85;\"\r\n\r\npreprocessor_formatting = \"color: #7f7f7f;\"\r\n\r\nnumber_formatting = \"color: #bd63c5;\"\r\n\r\nchar_formatting = \"color: #b5b366;\"\r\n\r\noperator_formatting = \"color: #ffdc00;\"\r\n\r\nbracket_formatting = \"color: #ae2344;\"\r\n\r\n; End of settings\r\n\r\n";
+	String tmpCheck;
+	File("cpp.ini").ReadAll(tmpCheck);
+	if (tmpCheck.Size() < 1) {
+		File("cpp.ini").WriteAll(cppini);
+	}
 	
 	// Load the valid extensions
 	CodeFormatter cf("", "cpp.ini");
@@ -141,7 +148,7 @@ int main(int argc, char **argv) {
 #if DEBUG == 1
 	//StringMemoryTest();
 	//VectorMemoryTest();
-	_CrtDumpMemoryLeaks();
+	//_CrtDumpMemoryLeaks();
 #endif
 
 	std::cout << std::endl;

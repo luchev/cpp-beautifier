@@ -1,10 +1,11 @@
-#ifndef CODEFORMATTER_H
+﻿#ifndef CODEFORMATTER_H
 #define CODEFORMATTER_H
 #include "String.h"
 #include "File.h"
 
 class CodeFormatter {
-private: // Helper functions and members
+private:
+	// Helper functions and members
 	size_t isInVector(const char * Str, Vector<String> Vect, bool VarCharAfter = true) const; // Returns whether Str matches one of the words in the vector compaing with the VarCharAfter functions
 	size_t longestMatch(const char * Str, Vector<String> Vect, bool VarCharAfter = true) const; // Returns the longest match from the vector
 	size_t isNumber(const char * Str) const; // Returns the index of where the number ends, -1 if no number is found from the start
@@ -12,6 +13,7 @@ private: // Helper functions and members
 	bool StrBeginsWith(const char* What, const char* Where, size_t Limit) const; // Returns true if Where begins with What
 	bool VarChar(char Ch) const; // Checks if the character is not a letter or number or underscore
 
+	///↓ DEPRECATED
 	// Heavy functions doing random stuff
 	void RemoveEmptyLines(bool OnlyWithSpaces = false); // Removes all empty lines, to be used after removing comments to clean up the code
 	void RemoveEmptySpace(); // Removes all double sapces, leaving one at most
@@ -24,6 +26,8 @@ private: // Helper functions and members
 	void RemoveNewLineBeforeOpenBrackets(); // Replaces "\n(" with "(", run StatementsOnNewLine, TrimLines and RemoveSpacesAroundParentheses before this
 	void AddSpaceBetweenKeywordsAndBrackets(); // Replaces keyword + ( with keyword + space + (, run StatementsOnNewLine, TrimLines, RemoveSpacesAroundParentheses and RemoveNewLineBeforeOpenParentheses before this
 	void Indent(); // Indent every new line properly, run StatementsOnNewLine, TrimLines and RemoveSpacesAroundParentheses and other of the above methods if needed before this
+	void Format(); // Formats the code thoroughly
+	///↑
 
 	// From the config
 	Vector<String> brackets;
@@ -32,7 +36,7 @@ private: // Helper functions and members
 	Vector<String> keywords_with_indent;
 	Vector<String> keywords_with_brackets;
 	Vector<String> extensions;
-protected:
+	// Fields to work with
 	String codeFile;
 	String configFile;
 	String codeOriginal;
@@ -40,6 +44,7 @@ protected:
 	String config;
 	String html;
 public:
+	// Helper methods
 	CodeFormatter(String CodeFile = "", String ConfigFile = "");
 	String CodeFile() const;
 	String ConfigFile() const;
@@ -57,10 +62,10 @@ public:
 	void SaveAs(String Name);
 	void SaveHtmlAs(String Name);
 
+	// Actual code formatting
 	void RemoveComments(); // Removes all comments in the code
 	void ChangeNewLines(const String Format); // Changes new lines LF = "\n" CRLF = "\r\n"
 	void ChangeIndentation(const String Format); // Changes the indentation TABS = "\t" SPACES = "    " (4 spaces)
-	void Format(); // Formats the code thoroughly
 	void Beautify(); // Fixes the code indentation, spacing, etc.
 	void Html(); // Converts the code to colored html and saves it in the html variable
 };
