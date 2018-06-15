@@ -19,6 +19,13 @@ public:
 	bool operator!=(const Trio<T, U, V> AnotherTrio);
 };
 
+
+template<typename T, typename U, typename V>
+std::ostream& operator<<(std::ostream& stream, const Trio<T, U, V>& trio) {
+	stream << trio.A() << " - " << trio.B() << " - " << trio.C();
+	return stream;
+}
+
 template<typename T, typename U, typename V>
 inline Trio<T, U, V>::Trio(T A, U B, V C) : a(A), b(B), c(C)
 {

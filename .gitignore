@@ -1,5 +1,5 @@
 .vs/
 Debug/
 *.sln
-STL.*
-STL/test/
+Beautifier.*
+Beautifier/test/

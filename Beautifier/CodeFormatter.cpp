@@ -512,6 +512,8 @@ void CodeFormatter::Indent() {
 }
 
 void CodeFormatter::Beautify() {
+	RemoveComments();
+	
 	String newCode; // New code stored here;
 	// Flags
 	bool preprocessorLine = false;
@@ -524,7 +526,7 @@ void CodeFormatter::Beautify() {
 	bool addChar = true; // Should the loop add a char
 	bool addIndent = false; // Should the loop add new line and Indent
 	char ii = 0; // Current char
-	int indent = 0; // The current indent level
+	size_t indent = 0; // The current indent level
 	int bracketRound = 0; // ( increases with 1, ) decreases with one
 	int bracketCurly = 0; // { increases with 1, } decreases with one
 	size_t indentkeyword = 0; // index of the indent keyword found, -1 if not found
@@ -532,7 +534,17 @@ void CodeFormatter::Beautify() {
 	size_t operatorr = 0; // index of the operator found, -1 if not found
 	String tab = "\t"; // The indent character(s) to use as indent
 	Stack<Trio<String, size_t, bool>> blocks; // Keeps the block that we are in (for, if, etc.) and its indent level
-
+	bool statementBrackets = false;
+	int newlines = 1;
+	bool rowStartsWithIf = false;
+	String Else("else");
+	String If("if");
+	String ElseIf("else if");
+	String doubleDot("::");
+	String comma(',');
+	String dot('.');
+	String arrowleft('<');
+	String arrowright('>');
 	// Actual formatting
 	for (size_t i = 0; i < codeFormatted.Size(); ++i) {
 		ii = codeFormatted[i];
@@ -579,16 +591,28 @@ void CodeFormatter::Beautify() {
 					openChar = false; // Close char
 			}
 		}
+		else if (ii == '#' && lastChar == '\n') { // preprocessor
+			newCode.TrimEnd();
+			newCode.Append("\n#");
+			addChar = false;
+			preprocessorLine = true;
+		}
 		// New line
 		else if (ii == '\n' || ii == '\r') {
 			if (preprocessorLine) {
 				preprocessorLine = false; // Close preprocessor line
+				addChar = false;
+				newCode.Append("\n");
+				for (; IsEmptySpace(codeFormatted[i + 1]); ++i); // Ignore all white space
 			}
 			if (openOneLineComment) {
 				openOneLineComment = false; // Close one line comment
+				addChar = false;
+				newCode.Append("\n");
+				for (; IsEmptySpace(codeFormatted[i + 1]); ++i); // Ignore all white space
 			}
+			newlines++;
 		}
-		std::cout << ii;
 		//
 		// The logic for adding characters to the new code string, indenting, etc. goes here
 		//
@@ -597,97 +621,217 @@ void CodeFormatter::Beautify() {
 			indentkeyword = longestMatch(codeFormatted.Get() + i, keywords_with_indent);
 			bracketkeyword = longestMatch(codeFormatted.Get() + i, keywords_with_brackets);
 			operatorr = longestMatch(codeFormatted.Get() + i, operators, false);
-			if (bracketkeyword < (size_t)-1) { // Open () after if or for, etc. to know after these brackets to add new line and indent
+			if (StrBeginsWith("private", codeFormatted.Get() + i, 7) || StrBeginsWith("protected", codeFormatted.Get() + i, 9) || StrBeginsWith("public", codeFormatted.Get() + i, 6)) {
+				addChar = false;
+				newCode.TrimEnd();
+				newCode.Append('\n');
+				indent = 1;
+				while (VarChar(codeFormatted[i])) {
+					newCode.Append(codeFormatted[i]);
+					++i;
+				}
+				for (; IsEmptySpace(codeFormatted[i + 1]); ++i); // Ignore all white space
+				newCode.Append(":\n");
+				if (!(StrBeginsWith("private", codeFormatted.Get() + i, 7) || StrBeginsWith("protected", codeFormatted.Get() + i, 9) || StrBeginsWith("public", codeFormatted.Get() + i, 6))) {
+					newCode.Append(tab);
+				}
+			}
+			else if (bracketkeyword < (size_t)-1) {
+				statementBrackets = true;
 				addChar = false;
 				newCode.Append(keywords_with_brackets[bracketkeyword]);
-				i += keywords_with_brackets[bracketkeyword].Size();
-				for (; IsEmptySpace(codeFormatted[i + 1]); ++i); // Ignore all white space
-				Trio<String, size_t, bool> block(keywords_with_brackets[bracketkeyword], indent, false);
-				blocks.Push(block);
+				i += keywords_with_brackets[bracketkeyword].Size() - 1;
+				Trio<String, size_t, bool> tmp(keywords_with_brackets[bracketkeyword], indent, false);
+				blocks.Push(tmp);
+				++indent;
+				//std::cout << newlines << " : ";
+				//std::cout << indent << std::endl;
+				//std::cout << "Adding " << keywords_with_brackets[bracketkeyword] << " " << indent << std::endl;
+				rowStartsWithIf = true;
 			}
 			else if (indentkeyword < (size_t)-1) {
-				newCode.Append(keywords_with_indent[bracketkeyword]);
-				i += keywords_with_indent[bracketkeyword].Size();
-				for (; IsEmptySpace(codeFormatted[i + 1]); ++i); // Ignore all white space
-				Trio<String, size_t, bool> block(keywords_with_indent[indentkeyword], indent, false);
-				blocks.Push(block);
+				addChar = false;
+				newCode.Append(keywords_with_indent[indentkeyword]);
+				i += keywords_with_indent[indentkeyword].Size() - 1;
+				Trio<String, size_t, bool> tmp(keywords_with_indent[indentkeyword], indent, false);
+				blocks.Push(tmp);
+				//std::cout << newlines << " : ";
+				//std::cout << "Adding " << keywords_with_indent[indentkeyword] << " " << indent << std::endl;
+				++indent;
+				newCode.TrimEnd();
+				newCode.Append('\n');
+				newCode.Append(tab * indent);
+				rowStartsWithIf = true;
 			}
-			else if (operatorr < (size_t)-1) { // includes ;
-				// TODO handle more operators
-				//if (operators[operatorr] == ";") { // Handle ;
-				//	newCode.TrimEnd();
-				//	if (bracketRound < 1) { // if not inside ( )
-				//		//if (noBracketBlock > 0) {
-				//		//	--noBracketBlock;
-				//		//	--indent;
-				//		//}
-
-				//		for (; codeFormatted[i + 1] == '\t' || codeFormatted[i + 1] == ' '; ++i); // Ignore all white space until new line or // for a comment
-				//		if (codeFormatted[i + 1] == '/') { // A comment is following
-				//			newCode.Append(';');
-				//		}
-				//		else { // No comment following
-				//			newCode.Append(";\n").Append(tab * indent);
-				//		}
-				//	}
-				//	else { // if inside ( )
-				//		newCode.Append("; ");
-				//	}
-				//	addChar = false;
-				//}
+			else if (operatorr < (size_t)-1) {
+				if (operators[operatorr] == ';') {
+						//std::cout << bracketRound;
+					if (bracketRound < 1) {
+						addChar = false;
+						newCode.TrimEnd();
+						newCode.Append(';');
+						newCode.Append('\n');
+						newCode.Append(tab * indent);
+						//for (; IsEmptySpace(codeFormatted[i + 1]); ++i); // Ignore all white space
+					}
+				}
+				else if (operators[operatorr] == doubleDot || operators[operatorr] == dot) { // No spaces //|| operators[operatorr] == arrowleft || operators[operatorr] == arrowright) {
+					addChar = false;
+					newCode.TrimEnd();
+					newCode.Append(operators[operatorr]);
+					i += operators[operatorr].Size() - 1;
+					for (; IsEmptySpace(codeFormatted[i + 1]); ++i); // Ignore all white space
+				}
+				else if (operators[operatorr] == comma) { // Space only on the right
+					addChar = false;
+					newCode.TrimEnd();
+					newCode.Append(", ");
+				}
+				else {
+					//std::cout << operators[operatorr] << std::endl;
+					addChar = false;
+					newCode.TrimEnd();
+					newCode.Append(' ');
+					newCode.Append(operators[operatorr]);
+					newCode.Append(' ');
+					i += operators[operatorr].Size() - 1;
+					for (; IsEmptySpace(codeFormatted[i + 1]); ++i); // Ignore all white space
+				}
 			}
 			else if (ii == '(') {
 				++bracketRound;
-				newCode.TrimEnd();
-				if (isInVector(String(newCode[newCode.Size() - 1]).Get(), operators, false) || (bracketRound == 1)) { // If the last char is an operator or a keyword with brackets
-					newCode.Append(' ');
-				}
-				for (; IsEmptySpace(codeFormatted[i + 1]); ++i); // Ignore all white space
 			}
 			else if (ii == ')') {
 				--bracketRound;
-				addChar = false;
-				newCode.TrimEnd();
-				for (; IsEmptySpace(codeFormatted[i + 1]); ++i);
-				newCode.Append(')');
-				if (bracketRound < 1) {
-					if (codeFormatted[i + 1] == '{' && !blocks.IsEmpty()) {
-						Trio<String, size_t, bool> newBlock(blocks.Pop());
-						newBlock.C(true);
-						blocks.Push(newBlock);
-						std::cout << "---" << indent;
-					}
+				size_t tmp = i;
+				for (; IsEmptySpace(codeFormatted[i + 1]); ++i); // Ignore all white space
+				//std::cout << codeOriginal.Get() + i + 1;
+				if (rowStartsWithIf && bracketRound < 1 && !StrBeginsWith("const", codeFormatted.Get() + i + 1, 5)) {
+					addChar = false;
+					newCode.TrimEnd();
+					newCode.Append(')');
+					newCode.Append('\n');
+					newCode.Append(tab * indent);
+					i = tmp;
 				}
-				else {
-					newCode.Append(' ');
+				else if (bracketRound < 1) {
+					addChar = false;
+					newCode.TrimEnd();
+					newCode.Append(") ");
 				}
+				//std::cout << indent;
 			}
 			else if (ii == '{') {
-				if (blocks.IsEmpty()) {
-					++indent;
+				if (statementBrackets) {
+					statementBrackets = false;
+					if (!blocks.IsEmpty()) {
+						Trio<String, size_t, bool> tmp(blocks.Pop());
+						tmp.C(true);
+						blocks.Push(tmp);
+
+						//std::cout << newlines << " : ";
+						//std::cout << "Changing " << tmp.A() << " " << indent << std::endl;
+					}
+				//std::cout << newlines << " : " << blocks.Peek().B() << std::endl;
 				}
-				++bracketCurly;
+				else {
+					Trio<String, size_t, bool> tmp("EMPTY", indent, true);
+					blocks.Push(tmp);
+					indent++;
+					//std::cout << indent;
+					//std::cout << newlines << " : ";
+					//std::cout << "Adding EMPTY" << " " << indent << std::endl;
+				}
 				addChar = false;
 				newCode.TrimEnd();
-				newCode.Append(" {\n");
+				newCode.Append('{');
+				newCode.Append('\n');
 				newCode.Append(tab * indent);
 			}
 			else if (ii == '}') {
-				--bracketCurly;
+				statementBrackets = false;
+				while (!blocks.IsEmpty() && blocks.Peek().C() == false) {
+					//--indent;
+					indent = blocks.Pop().B();
+					//std::cout << newlines << " : ";
+					//std::cout << "Removing 1-" << blocks.Peek().A() << " " << indent << std::endl;
+				}
+				if (!blocks.IsEmpty()) {
+					//--indent;
+					indent = blocks.Pop().B();
+					//std::cout << blocks.Peek().A();
+					//std::cout << newlines << " : ";
+					//std::cout << "Removing " << blocks.Peek().A() << " " << indent << std::endl;
+				}
 				addChar = false;
-				if (!blocks.IsEmpty() && blocks.Peek().C() == true) {
-					blocks.Pop();
-				}
-				else {
-					std::cout << "^^^";
-				}
 				newCode.TrimEnd();
-				newCode.Append("\n");
+				newCode.Append('\n');
 				newCode.Append(tab * indent);
-				newCode.Append("}\n");
-				--indent;
+				newCode.Append('}');
+				if (!blocks.IsEmpty()) {
+					for (; IsEmptySpace(codeFormatted[i + 1]); ++i); // Ignore all white space
+					bool else_if = StrBeginsWith("else if", codeFormatted.Get() + i + 1, 7);
+					bool else_ = StrBeginsWith("else", codeFormatted.Get() + i + 1, 4);
+					bool if_ = StrBeginsWith("if", codeFormatted.Get() + i + 1, 2);
+					if (else_if == true || else_ == true || if_ == true) {
+					}
+					else if (blocks.Peek().A() == "EMPTY") {
+
+					}
+					else {
+						indent = blocks.Peek().B();
+						//std::cout << "Indent " << blocks.Peek().A() << " " << blocks.Peek().B() << std::endl;
+
+					}
+				}
+				newCode.Append('\n');
+				newCode.Append(tab * indent);
+				//std::cout << indent;
 			}
 			else if (IsEmptySpace(ii)) {
+				if (ii == '\n') {
+					//std::cout << newlines << " : " << indent << std::endl;
+					if (rowStartsWithIf) {
+						for (; IsEmptySpace(codeFormatted[i + 1]); ++i); // Ignore all white space
+						bool else_if = StrBeginsWith("else if", codeFormatted.Get() + i + 1, 7);
+						bool else_ = StrBeginsWith("else", codeFormatted.Get() + i + 1, 4);
+						bool if_ = StrBeginsWith("if", codeFormatted.Get() + i + 1, 2);
+						if (else_if == true || else_ == true || if_ == true) {
+							if (!blocks.IsEmpty() && blocks.Peek().C() == false) {
+								if (else_ == true && blocks.Peek().A() == Else) {
+									while (!blocks.IsEmpty() && blocks.Peek().A() != If) {
+										//--indent;
+										indent = blocks.Peek().B();
+										//std::cout << newlines << " : ";
+										//std::cout << "Removing " << blocks.Peek().A() << " " << indent << std::endl;
+										blocks.Pop();
+										//std::cout << "PoppingELSE";
+									}
+									if (!blocks.IsEmpty() && blocks.Peek().A() == If) {
+										indent = blocks.Peek().B();
+										//std::cout << newlines << " : ";
+										//std::cout << "Removing " << blocks.Peek().A() << " " << indent << std::endl;
+									}
+								}
+							}
+							if (!blocks.IsEmpty() && (blocks.Peek().A() == ElseIf || blocks.Peek().A() == Else)) {
+								//indent = blocks.Peek().B();
+								//--indent;
+							}
+						}
+						else {
+							if (!blocks.IsEmpty() && blocks.Peek().C() == false) {
+								//--indent;
+								indent = blocks.Peek().B();
+								//std::cout << newlines << " : ";
+								//std::cout << "Removing 1-" << blocks.Peek().A() << " " << indent << std::endl;
+								blocks.Pop();
+								//std::cout << "Popping1Line";
+							}
+						}
+					}
+					rowStartsWithIf = false;
+				}
 				if (IsEmptySpace(lastChar)) {
 					addChar = false;
 				}
@@ -698,9 +842,7 @@ void CodeFormatter::Beautify() {
 		}
 		// Add the char to the new code string if needed
 		if (addChar) {
-			//if (lastChar == '\n') { // if we just moved to a new line
-			//	newCode.Append(tab * indent);
-			//}
+
 			newCode.Append(ii);
 		}
 	}
@@ -957,6 +1099,11 @@ size_t CodeFormatter::isNumber(const char * Str) const {
 	if (!VarChar(Str[i]))
 		return (Str[i - 1] >= '0' && Str[i - 1] <= '9') ? i : -1;
 	return -1;
+}
+
+bool CodeFormatter::isLetter(char Ch) const
+{
+	return false;
 }
 
 bool CodeFormatter::StrEqualsWithVarCharAfter(const char* What, const char* Where, size_t Limit) const  { // Returns true if the words are matched and there's not a letter or a number after the end in Where

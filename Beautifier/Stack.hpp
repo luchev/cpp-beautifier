@@ -1,6 +1,6 @@
 #ifndef STACK_H
 #define STACK_H
-
+#include <iostream>
 #include "Utils.h"
 #if DEBUG == 1
 #define _CRTDBG_MAP_ALLOC
@@ -25,6 +25,8 @@ private:
 	void copy(const Stack & St); // Copies the items of one stack into the current one appending them at the end
 	void Rcopy(StackItem<T>* item); // ONLY TO BE USED FROM INSIDE copy() => Used to copy the items from one stack into another recursively
 public:
+	void print();
+	void Rprint(StackItem<T>* item);
 	Stack();
 	~Stack();
 	Stack(const Stack<T>& St);
@@ -32,7 +34,7 @@ public:
 
 	const bool IsEmpty(); // Returns whether the stack has elements or not
 	const T Peek(); // View the last element
-	void Push(T& Item); // Add an element
+	void Push(const T& Item); // Add an element
 	T Pop(); // Get the last element and remove it from the stack
 };
 
@@ -54,6 +56,19 @@ void Stack<T>::Rcopy(StackItem<T>* item) {
 	if (item != nullptr) {
 		Rcopy(item->previous);
 		Push(item->data);
+	}
+}
+template<typename T>
+inline void Stack<T>::print()
+{
+	Rprint(top);
+}
+template<typename T>
+inline void Stack<T>::Rprint(StackItem<T>* item)
+{
+	if (item != nullptr) {
+		Rprint(item->previous);
+		std::cout << item->data << std::endl;
 	}
 }
 template <typename T>
@@ -89,7 +104,7 @@ const T Stack<T>::Peek() {
 	}
 }
 template <typename T>
-void Stack<T>::Push(T& Item) {
+void Stack<T>::Push(const T& Item) {
 	StackItem<T>* newItem = new StackItem<T>;
 	newItem->data = Item;
 	newItem->previous = top;

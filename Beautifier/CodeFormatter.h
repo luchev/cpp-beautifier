@@ -9,6 +9,7 @@ private:
 	size_t isInVector(const char * Str, Vector<String> Vect, bool VarCharAfter = true) const; // Returns whether Str matches one of the words in the vector compaing with the VarCharAfter functions
 	size_t longestMatch(const char * Str, Vector<String> Vect, bool VarCharAfter = true) const; // Returns the longest match from the vector
 	size_t isNumber(const char * Str) const; // Returns the index of where the number ends, -1 if no number is found from the start
+	bool isLetter(char Ch) const; // Returns true if Ch is from a-Z
 	bool StrEqualsWithVarCharAfter(const char* What, const char* Where, size_t Limit) const; // Compares the stringgs and checks the last char in Where for being a variable char
 	bool StrBeginsWith(const char* What, const char* Where, size_t Limit) const; // Returns true if Where begins with What
 	bool VarChar(char Ch) const; // Checks if the character is not a letter or number or underscore
