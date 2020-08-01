@@ -1,5 +1,6 @@
 #include "File.h"
 #include <fstream>
+#include <iostream>
 
 File::File(String Name) : name(Name) {
 }
@@ -30,7 +31,7 @@ bool File::WriteAll(const String& Str) {
 
 bool File::AppendAll(const String& Str)
 {
-	std::ofstream os(name.Get(), std::ofstream::app || std::ios_base::binary);
+	std::ofstream os(name.Get(), std::ofstream::app | std::ios_base::binary);
 	if (os.fail())
 		return false;
 	os << Str;

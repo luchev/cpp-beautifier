@@ -5,7 +5,6 @@
 #include "File.h"
 #include "CodeFormatter.h"
 #include <cstdlib>
-#include <crtdbg.h>
 #include <fstream>
 #include <iostream>
 #include <iomanip>
